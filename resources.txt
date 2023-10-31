@@ -1,0 +1,7 @@
+https://opengameart.org/ SPRITES PNG
+
+https://api.arcade.academy/en/latest/examples/platform_tutorial/index.html 
+
+https://doc.mapeditor.org/en/stable/manual/introduction/ MAPS DEVELOPER
+
+https://api.arcade.academy/en/stable/examples/sprite_face_left_or_right.html?highlight=turn%20left GIRAR PERSONAJE
