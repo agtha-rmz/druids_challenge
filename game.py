@@ -5,8 +5,8 @@ Platformer Game
 import math 
 import os
 import arcade
-
-from entity import PlayerCharacter, RobotEnemy, ZombieEnemy
+from pc import PlayerCharacter
+from entity import HorseEnemy, TreeEnemy
 from constants import *
 
 class MyGame(arcade.Window):
@@ -118,10 +118,10 @@ class MyGame(arcade.Window):
                 my_object.shape[0], my_object.shape[1]
             )
             enemy_type = my_object.properties["type"]
-            if enemy_type == "robot":
-                enemy = RobotEnemy()
-            elif enemy_type == "zombie":
-                enemy = ZombieEnemy()
+            if enemy_type == "horse":
+                enemy = HorseEnemy()
+            elif enemy_type == "tree":
+                enemy = TreeEnemy()
             enemy.center_x = math.floor(
                 cartesian[0] * TILE_SCALING * self.tile_map.tile_width
             )
