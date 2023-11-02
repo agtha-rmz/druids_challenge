@@ -57,6 +57,7 @@ class Enemy(Entity):
         super().__init__(name_folder, name_file)
 
         self.should_update_walk = 0
+        self.health = 0
     
     def update_animation(self, delta_time: float = 1 / 60):
 
@@ -88,6 +89,7 @@ class HorseEnemy(Enemy):
         # Set up parent class
         super().__init__("horse", "horse")
 
+        self.health = 50
 
 class TreeEnemy(Enemy):
     def __init__(self):
@@ -95,4 +97,5 @@ class TreeEnemy(Enemy):
         # Set up parent class
         super().__init__("tree", "tree")
 
+        self.health = 100
 
