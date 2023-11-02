@@ -147,8 +147,8 @@ class MyGame(arcade.Window):
                 enemy.change_x = my_object.properties["change_x"]
             self.scene.add_sprite(LAYER_NAME_ENEMIES, enemy)
        
-        # Add bullet spritelist to Scene
-        self.scene.add_sprite_list(LAYER_NAME_BULLETS)
+        # Add magic spritelist to Scene
+        self.scene.add_sprite_list(LAYER_NAME_MAGIC)
     
 
         # --- Other stuff
@@ -299,20 +299,20 @@ class MyGame(arcade.Window):
         if self.can_shoot:
             if self.shoot_pressed:
                 arcade.play_sound(self.shoot_sound)
-                bullet = arcade.Sprite(
+                magic = arcade.Sprite(
                     ":resources:images/space_shooter/laserBlue01.png",
-                    SPRITE_SCALING_LASER,
+                    SPRITE_SCALING_MAGIC,
                 )
 
                 if self.player_sprite.facing_direction == RIGHT_FACING:
-                    bullet.change_x = BULLET_SPEED
+                    magic.change_x = MAGIC_SPEED
                 else:
-                    bullet.change_x = -BULLET_SPEED
+                    magic.change_x = -MAGIC_SPEED
 
-                bullet.center_x = self.player_sprite.center_x
-                bullet.center_y = self.player_sprite.center_y
+                magic.center_x = self.player_sprite.center_x
+                magic.center_y = self.player_sprite.center_y
 
-                self.scene.add_sprite(LAYER_NAME_BULLETS, bullet)
+                self.scene.add_sprite(LAYER_NAME_MAGIC, magic)
 
                 self.can_shoot = False
         else:
@@ -332,9 +332,9 @@ class MyGame(arcade.Window):
             ],
         )
 
-        # Update moving platforms, enemies, and bullets
+        # Update moving platforms, enemies, and magics
         self.scene.update(
-            [LAYER_NAME_MOVING_PLATFORMS, LAYER_NAME_ENEMIES, LAYER_NAME_BULLETS]
+            [LAYER_NAME_MOVING_PLATFORMS, LAYER_NAME_ENEMIES, LAYER_NAME_MAGIC]
         )
 
         # See if the enemy hit a boundary and needs to reverse direction.
@@ -353,9 +353,9 @@ class MyGame(arcade.Window):
             ):
                 enemy.change_x *= -1
 
-        for bullet in self.scene[LAYER_NAME_BULLETS]:
+        for magic in self.scene[LAYER_NAME_MAGIC]:
             hit_list = arcade.check_for_collision_with_lists(
-                bullet,
+                magic,
                 [
                     self.scene[LAYER_NAME_ENEMIES],
                     self.scene[LAYER_NAME_PLATFORMS],
@@ -364,7 +364,7 @@ class MyGame(arcade.Window):
             )
 
             if hit_list:
-                bullet.remove_from_sprite_lists()
+                magic.remove_from_sprite_lists()
 
                 for collision in hit_list:
                     if (
@@ -372,7 +372,7 @@ class MyGame(arcade.Window):
                         in collision.sprite_lists
                     ):
                         # The collision was with an enemy
-                        collision.health -= BULLET_DAMAGE
+                        collision.health -= MAGIC_DAMAGE
 
                         if collision.health <= 0:
                             collision.remove_from_sprite_lists()
@@ -383,11 +383,11 @@ class MyGame(arcade.Window):
 
                 return
 
-            if (bullet.right < 0) or (
-                bullet.left
+            if (magic.right < 0) or (
+                magic.left
                 > (self.tile_map.width * self.tile_map.tile_width) * TILE_SCALING
             ):
-                bullet.remove_from_sprite_lists()
+                magic.remove_from_sprite_lists()
 
         player_collision_list = arcade.check_for_collision_with_lists(
             self.player_sprite,
