@@ -117,25 +117,24 @@ class MyGame(arcade.Window):
             cartesian = self.tile_map.get_cartesian(
                 my_object.shape[0], my_object.shape[1]
             )
+        for my_object in enemies_layer:
+            cartesian = self.tile_map.get_cartesian(
+                my_object.shape[0], my_object.shape[1]
+            )
             enemy_type = my_object.properties["type"]
-            if enemy_type == "horse":
+            if enemy_type == "robot":
                 enemy = HorseEnemy()
-            elif enemy_type == "tree":
+            elif enemy_type == "zombie":
                 enemy = TreeEnemy()
+            else:
+                raise Exception(f"Unknown enemy type {enemy_type}.")
             enemy.center_x = math.floor(
                 cartesian[0] * TILE_SCALING * self.tile_map.tile_width
             )
             enemy.center_y = math.floor(
                 (cartesian[1] + 1) * (self.tile_map.tile_height * TILE_SCALING)
             )
-            if "boundary_left" in my_object.properties:
-                enemy.boundary_left = my_object.properties["boundary_left"]
-            if "boundary_right" in my_object.properties:
-                enemy.boundary_right = my_object.properties["boundary_right"]
-            if "change_x" in my_object.properties:
-                enemy.change_x = my_object.properties["change_x"]
             self.scene.add_sprite(LAYER_NAME_ENEMIES, enemy)
-
 
         # --- Other stuff
         # Set the background color
@@ -292,22 +291,6 @@ class MyGame(arcade.Window):
 
         # Update moving platforms and enemies
         self.scene.update([LAYER_NAME_MOVING_PLATFORMS, LAYER_NAME_ENEMIES])
-
-        # See if the enemy hit a boundary and needs to reverse direction.
-        for enemy in self.scene[LAYER_NAME_ENEMIES]:
-            if (
-                enemy.boundary_right
-                and enemy.right > enemy.boundary_right
-                and enemy.change_x > 0
-            ):
-                enemy.change_x *= -1
-
-            if (
-                enemy.boundary_left
-                and enemy.left < enemy.boundary_left
-                and enemy.change_x < 0
-            ):
-                enemy.change_x *= -1
 
         # See if we hit any coins
         coin_hit_list = arcade.check_for_collision_with_list(
