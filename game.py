@@ -134,8 +134,14 @@ class MyGame(arcade.Window):
             enemy.center_y = math.floor(
                 (cartesian[1] + 1) * (self.tile_map.tile_height * TILE_SCALING)
             )
+            if "boundary_left" in my_object.properties:
+                enemy.boundary_left = my_object.properties["boundary_left"]
+            if "boundary_right" in my_object.properties:
+                enemy.boundary_right = my_object.properties["boundary_right"]
+            if "change_x" in my_object.properties:
+                enemy.change_x = my_object.properties["change_x"]
             self.scene.add_sprite(LAYER_NAME_ENEMIES, enemy)
-
+       
         # --- Other stuff
         # Set the background color
         if self.tile_map.background_color:
@@ -292,23 +298,51 @@ class MyGame(arcade.Window):
         # Update moving platforms and enemies
         self.scene.update([LAYER_NAME_MOVING_PLATFORMS, LAYER_NAME_ENEMIES])
 
-        # See if we hit any coins
-        coin_hit_list = arcade.check_for_collision_with_list(
-            self.player_sprite, self.scene[LAYER_NAME_COINS]
+        # See if the enemy hit a boundary and needs to reverse direction.
+        for enemy in self.scene[LAYER_NAME_ENEMIES]:
+            if (
+                enemy.boundary_right
+                and enemy.right > enemy.boundary_right
+                and enemy.change_x > 0
+            ):
+                enemy.change_x *= -1
+
+            if (
+                enemy.boundary_left
+                and enemy.left < enemy.boundary_left
+                and enemy.change_x < 0
+            ):
+                enemy.change_x *= -1
+        player_collision_list = arcade.check_for_collision_with_lists(
+            self.player_sprite,
+            [
+                self.scene[LAYER_NAME_COINS],
+                self.scene[LAYER_NAME_ENEMIES],
+            ],
         )
 
-        # Loop through each coin we hit (if any) and remove it
-        for coin in coin_hit_list:
+        ## See if we hit any coins
+        #coin_hit_list = arcade.check_for_collision_with_list(
+        #    self.player_sprite, self.scene[LAYER_NAME_COINS]
+        #)
 
-            # Figure out how many points this coin is worth
-            if "Points" not in coin.properties:
-                print("Warning, collected a coin without a Points property.")
+        # Loop through each coin we hit (if any) and remove it
+        for collision in player_collision_list:
+
+            if self.scene[LAYER_NAME_ENEMIES] in collision.sprite_lists:
+                arcade.play_sound(self.game_over)
+                self.setup()
+                return
             else:
-                points = int(coin.properties["Points"])
-                self.score += points
+                # Figure out how many points this coin is worth
+                if "Points" not in collision.properties:
+                    print("Warning, collected a coin without a Points property.")
+                else:
+                    points = int(collision.properties["Points"])
+                    self.score += points
 
             # Remove the coin
-            coin.remove_from_sprite_lists()
+            collision.remove_from_sprite_lists()
             arcade.play_sound(self.collect_coin_sound)
 
         # Position the camera

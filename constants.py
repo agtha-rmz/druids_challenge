@@ -16,10 +16,17 @@ PLAYER_MOVEMENT_SPEED = 7
 GRAVITY = 1.5
 PLAYER_JUMP_SPEED = 30
 
+# How many pixels to keep as a minimum margin between the character
+# and the edge of the screen.
+LEFT_VIEWPORT_MARGIN = 200
+RIGHT_VIEWPORT_MARGIN = 200
+BOTTOM_VIEWPORT_MARGIN = 150
+TOP_VIEWPORT_MARGIN = 100
+
 PLAYER_START_X = 2
 PLAYER_START_Y = 1
 
-# Constants used to track if the player is facing left or right
+# Se invierten valores ya que los Sprites miraban hacia la izq por defecto"
 RIGHT_FACING = 1
 LEFT_FACING = 0
 

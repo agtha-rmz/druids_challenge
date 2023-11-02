@@ -1,5 +1,5 @@
 import arcade
-import math
+
 from constants import *
 
 def load_texture_pair(filename):
@@ -22,8 +22,7 @@ class Entity(arcade.Sprite):
         # Used for image sequences
         self.cur_texture = 0
         self.scale = CHARACTER_SCALING
-        self.character_face_direction = RIGHT_FACING
-
+        
         main_path = f"sprites/{name_folder}/{name_file}"
         
         self.jump_texture_pair = load_texture_pair(f"{main_path}_jump.png")
@@ -57,7 +56,31 @@ class Enemy(Entity):
         # Setup parent class
         super().__init__(name_folder, name_file)
 
-  
+        self.should_update_walk = 0
+    
+    def update_animation(self, delta_time: float = 1 / 60):
+
+        # Figure out if we need to flip face left or right
+        if self.change_x < 0 and self.facing_direction == RIGHT_FACING:
+            self.facing_direction = LEFT_FACING
+        elif self.change_x > 0 and self.facing_direction == LEFT_FACING:
+            self.facing_direction = RIGHT_FACING
+
+        # Idle animation
+        if self.change_x == 0:
+            self.texture = self.idle_texture_pair[self.facing_direction]
+            return
+
+        # Walking animation
+        if self.should_update_walk == 3:
+            self.cur_texture += 1
+            if self.cur_texture > 7:
+                self.cur_texture = 0
+            self.texture = self.walk_textures[self.cur_texture][self.facing_direction]
+            self.should_update_walk = 0
+            return
+
+        self.should_update_walk += 1
 
 class HorseEnemy(Enemy):
     def __init__(self):
