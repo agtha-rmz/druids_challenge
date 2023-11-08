@@ -5,8 +5,8 @@ Platformer Game
 import math 
 import os
 import arcade
-from pc import PlayerCharacter
-from entity import HorseEnemy, TreeEnemy
+
+from entity import PlayerCharacter, RobotEnemy, ZombieEnemy
 from constants import *
 
 class MyGame(arcade.Window):
@@ -31,7 +31,6 @@ class MyGame(arcade.Window):
         self.right_pressed = False
         self.up_pressed = False
         self.down_pressed = False
-        self.shoot_pressed = False
         self.jump_needs_reset = False
 
         # Our TileMap Object
@@ -57,16 +56,10 @@ class MyGame(arcade.Window):
         # Keep track of the score
         self.score = 0
 
-        # Shooting mechanics
-        self.can_shoot = False
-        self.shoot_timer = 0
-
         # Load sounds
         self.collect_coin_sound = arcade.load_sound(":resources:sounds/coin1.wav")
         self.jump_sound = arcade.load_sound(":resources:sounds/jump1.wav")
         self.game_over = arcade.load_sound(":resources:sounds/gameover1.wav")
-        self.shoot_sound = arcade.load_sound(":resources:sounds/hurt5.wav")
-        self.hit_sound = arcade.load_sound(":resources:sounds/hit5.wav")
 
     def setup(self):
         """Set up the game here. Call this function to restart the game."""
@@ -103,10 +96,6 @@ class MyGame(arcade.Window):
 
         # Keep track of the score
         self.score = 0
-
-        # Shooting mechanics
-        self.can_shoot = True
-        self.shoot_timer = 0
      
         # Set up the player, specifically placing it at these coordinates.
         self.player_sprite = PlayerCharacter()
@@ -130,9 +119,9 @@ class MyGame(arcade.Window):
             )
             enemy_type = my_object.properties["type"]
             if enemy_type == "robot":
-                enemy = HorseEnemy()
+                enemy = RobotEnemy()
             elif enemy_type == "zombie":
-                enemy = TreeEnemy()
+                enemy = ZombieEnemy()
             enemy.center_x = math.floor(
                 cartesian[0] * TILE_SCALING * self.tile_map.tile_width
             )
@@ -146,10 +135,7 @@ class MyGame(arcade.Window):
             if "change_x" in my_object.properties:
                 enemy.change_x = my_object.properties["change_x"]
             self.scene.add_sprite(LAYER_NAME_ENEMIES, enemy)
-       
-        # Add magic spritelist to Scene
-        self.scene.add_sprite_list(LAYER_NAME_MAGIC)
-    
+
 
         # --- Other stuff
         # Set the background color
@@ -197,7 +183,7 @@ class MyGame(arcade.Window):
 
     def process_keychange(self):
         """
-        Called when we change a key up/down, or we move on/off a ladder.
+        Called when we change a key up/down or we move on/off a ladder.
         """
         # Process up/down
         if self.up_pressed and not self.down_pressed:
@@ -228,7 +214,8 @@ class MyGame(arcade.Window):
             self.player_sprite.change_x = -PLAYER_MOVEMENT_SPEED
         else:
             self.player_sprite.change_x = 0
-
+        
+    
     def on_key_press(self, key, modifiers):
         """Called whenever a key is pressed."""
 
@@ -240,9 +227,6 @@ class MyGame(arcade.Window):
             self.left_pressed = True
         elif key == arcade.key.RIGHT or key == arcade.key.D:
             self.right_pressed = True
-
-        if key == arcade.key.Q:
-            self.shoot_pressed = True
 
         self.process_keychange()
 
@@ -259,23 +243,22 @@ class MyGame(arcade.Window):
         elif key == arcade.key.RIGHT or key == arcade.key.D:
             self.right_pressed = False
 
-        if key == arcade.key.Q:
-            self.shoot_pressed = False
-
         self.process_keychange()
 
-    def center_camera_to_player(self, speed=0.2):
+    def center_camera_to_player(self):
         screen_center_x = self.player_sprite.center_x - (self.camera.viewport_width / 2)
         screen_center_y = self.player_sprite.center_y - (
             self.camera.viewport_height / 2
         )
+
+        # Don't let camera travel past 0
         if screen_center_x < 0:
             screen_center_x = 0
         if screen_center_y < 0:
             screen_center_y = 0
         player_centered = screen_center_x, screen_center_y
 
-        self.camera.move_to(player_centered, speed)
+        self.camera.move_to(player_centered, 0.2)
 
     def on_update(self, delta_time):
         """Movement and game logic"""
@@ -296,31 +279,6 @@ class MyGame(arcade.Window):
             self.player_sprite.is_on_ladder = False
             self.process_keychange()
 
-        if self.can_shoot:
-            if self.shoot_pressed:
-                arcade.play_sound(self.shoot_sound)
-                magic = arcade.Sprite(
-                    ":resources:images/space_shooter/laserBlue01.png",
-                    SPRITE_SCALING_MAGIC,
-                )
-
-                if self.player_sprite.facing_direction == RIGHT_FACING:
-                    magic.change_x = MAGIC_SPEED
-                else:
-                    magic.change_x = -MAGIC_SPEED
-
-                magic.center_x = self.player_sprite.center_x
-                magic.center_y = self.player_sprite.center_y
-
-                self.scene.add_sprite(LAYER_NAME_MAGIC, magic)
-
-                self.can_shoot = False
-        else:
-            self.shoot_timer += 1
-            if self.shoot_timer == SHOOT_SPEED:
-                self.can_shoot = True
-                self.shoot_timer = 0
-
         # Update Animations
         self.scene.update_animation(
             delta_time,
@@ -332,10 +290,8 @@ class MyGame(arcade.Window):
             ],
         )
 
-        # Update moving platforms, enemies, and magics
-        self.scene.update(
-            [LAYER_NAME_MOVING_PLATFORMS, LAYER_NAME_ENEMIES, LAYER_NAME_MAGIC]
-        )
+        # Update moving platforms and enemies
+        self.scene.update([LAYER_NAME_MOVING_PLATFORMS, LAYER_NAME_ENEMIES])
 
         # See if the enemy hit a boundary and needs to reverse direction.
         for enemy in self.scene[LAYER_NAME_ENEMIES]:
@@ -353,68 +309,24 @@ class MyGame(arcade.Window):
             ):
                 enemy.change_x *= -1
 
-        for magic in self.scene[LAYER_NAME_MAGIC]:
-            hit_list = arcade.check_for_collision_with_lists(
-                magic,
-                [
-                    self.scene[LAYER_NAME_ENEMIES],
-                    self.scene[LAYER_NAME_PLATFORMS],
-                    self.scene[LAYER_NAME_MOVING_PLATFORMS],
-                ],
-            )
-
-            if hit_list:
-                magic.remove_from_sprite_lists()
-
-                for collision in hit_list:
-                    if (
-                        self.scene[LAYER_NAME_ENEMIES]
-                        in collision.sprite_lists
-                    ):
-                        # The collision was with an enemy
-                        collision.health -= MAGIC_DAMAGE
-
-                        if collision.health <= 0:
-                            collision.remove_from_sprite_lists()
-                            self.score += 100
-
-                        # Hit sound
-                        arcade.play_sound(self.hit_sound)
-
-                return
-
-            if (magic.right < 0) or (
-                magic.left
-                > (self.tile_map.width * self.tile_map.tile_width) * TILE_SCALING
-            ):
-                magic.remove_from_sprite_lists()
-
-        player_collision_list = arcade.check_for_collision_with_lists(
-            self.player_sprite,
-            [
-                self.scene[LAYER_NAME_COINS],
-                self.scene[LAYER_NAME_ENEMIES],
-            ],
+        # See if we hit any coins
+        coin_hit_list = arcade.check_for_collision_with_list(
+            self.player_sprite, self.scene[LAYER_NAME_COINS]
         )
 
         # Loop through each coin we hit (if any) and remove it
-        for collision in player_collision_list:
+        for coin in coin_hit_list:
 
-            if self.scene[LAYER_NAME_ENEMIES] in collision.sprite_lists:
-                arcade.play_sound(self.game_over)
-                self.setup()
-                return
+            # Figure out how many points this coin is worth
+            if "Points" not in coin.properties:
+                print("Warning, collected a coin without a Points property.")
             else:
-                # Figure out how many points this coin is worth
-                if "Points" not in collision.properties:
-                    print("Warning, collected a coin without a Points property.")
-                else:
-                    points = int(collision.properties["Points"])
-                    self.score += points
+                points = int(coin.properties["Points"])
+                self.score += points
 
-                # Remove the coin
-                collision.remove_from_sprite_lists()
-                arcade.play_sound(self.collect_coin_sound)
+            # Remove the coin
+            coin.remove_from_sprite_lists()
+            arcade.play_sound(self.collect_coin_sound)
 
         # Position the camera
         self.center_camera_to_player()

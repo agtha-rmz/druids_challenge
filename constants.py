@@ -11,10 +11,17 @@ SPRITE_PIXEL_SIZE = 128
 GRID_PIXEL_SIZE = SPRITE_PIXEL_SIZE * TILE_SCALING
 
 # Shooting Constants
+<<<<<<< HEAD
 SPRITE_SCALING_MAGIC = 0.8
 SHOOT_SPEED = 15
 MAGIC_SPEED = 12
 MAGIC_DAMAGE = 25
+=======
+SPRITE_SCALING_LASER = 0.3
+SHOOT_SPEED = 15
+BULLET_SPEED = 12
+BULLET_DAMAGE = 25
+>>>>>>> develop
 
 # Movement speed of player, in pixels per frame
 PLAYER_MOVEMENT_SPEED = 7
@@ -44,4 +51,8 @@ LAYER_NAME_BACKGROUND = "Background"
 LAYER_NAME_LADDERS = "Ladders"
 LAYER_NAME_PLAYER = "Player"
 LAYER_NAME_ENEMIES = "Enemies"
+<<<<<<< HEAD
 LAYER_NAME_MAGIC = "Magic"
+=======
+LAYER_NAME_BULLETS = "Bullets"
+>>>>>>> develop
