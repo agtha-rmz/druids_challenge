@@ -36,6 +36,7 @@ class GameView(arcade.View):
 
         # Our TileMap Object
         self.tile_map = None
+        self.background_map = None
 
         # Our Scene Object
         self.scene = None
@@ -62,11 +63,11 @@ class GameView(arcade.View):
         self.shoot_timer = 0
 
         # Load sounds
-        self.collect_coin_sound = arcade.load_sound(":resources:sounds/coin1.wav")
-        self.jump_sound = arcade.load_sound(":resources:sounds/jump1.wav")
-        self.game_over = arcade.load_sound(":resources:sounds/gameover1.wav")
-        self.shoot_sound = arcade.load_sound(":resources:sounds/hurt5.wav")
-        self.hit_sound = arcade.load_sound(":resources:sounds/hit5.wav")
+        self.collect_coin_sound = arcade.load_sound("sonidos/Collect_Point.mp3")
+        self.jump_sound = arcade.load_sound("sonidos/Jump.wav")
+        self.game_over = arcade.load_sound("sonidos/Hero_Death_00.mp3")
+        self.shoot_sound = arcade.load_sound("sonidos/Shoot.wav")
+        self.hit_sound = arcade.load_sound("sonidos/hit.wav")
 
     def setup(self):
         """Set up the game here. Call this function to restart the game."""
@@ -77,6 +78,7 @@ class GameView(arcade.View):
 
         # Map name
         map_name = ":resources:tiled_maps/map_with_ladders.json"
+        self.background_map = arcade.load_texture('layers-mainmenu/forest_back_550_x_400.png')
 
         # Layer Specific Options for the Tilemap
         layer_options = {
@@ -152,9 +154,7 @@ class GameView(arcade.View):
     
 
         # --- Other stuff
-        # Set the background color
-        if self.tile_map.background_color:
-            arcade.set_background_color(self.tile_map.background_color)
+       
 
         # Create the 'physics engine'
         self.physics_engine = arcade.PhysicsEnginePlatformer(
@@ -172,6 +172,11 @@ class GameView(arcade.View):
 
         # Clear the screen to the background color
         self.clear()
+
+         # Set the background color
+        arcade.draw_lrwh_rectangle_textured(0, 0,
+                                            SCREEN_WIDTH, SCREEN_HEIGHT,
+                                            self.background_map)
 
         # Activate our Camera
         self.camera.use()
@@ -437,7 +442,7 @@ class GameOverView(arcade.View):
         """Draw the game overview"""
         self.clear()
         arcade.draw_text(
-            "Game Over - Click to restart",
+            "Game Over - Click para reiniciar",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2,
             arcade.color.WHITE,
