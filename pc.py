@@ -3,7 +3,7 @@ from constants import *
 
 
 class PlayerCharacter(Entity):
-    """Player Sprite"""
+    """Sprite del jugador"""
 
     def __init__(self):
 

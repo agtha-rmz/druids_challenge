@@ -11,22 +11,22 @@ from constants import *
 
 class GameView(arcade.View):
     """
-    Main application class.
+    Clase aplicación principal
     """
 
     def __init__(self):
         """
-        Initializer for the game
+        Inicializador del juego
         """
 
-        # Call the parent class and set up the window
+        # Llama clase padre y setea la ventana
         super().__init__()
 
-        # Set the path to start with this program
+        # Setea el path para arrancar el programa
         file_path = os.path.dirname(os.path.abspath(__file__))
         os.chdir(file_path)
 
-        # Track the current state of what key is pressed
+        # Sigue el estado actual de la tecla presionada
         self.left_pressed = False
         self.right_pressed = False
         self.up_pressed = False
@@ -34,35 +34,35 @@ class GameView(arcade.View):
         self.shoot_pressed = False
         self.jump_needs_reset = False
 
-        # Our TileMap Object
+        # Nuestro objeto TileMap
         self.tile_map = None
         self.background_map = None
 
-        # Our Scene Object
+        # Nuestro objeto Scene
         self.scene = None
 
-        # Separate variable that holds the player sprite
+        # Variable separa que contiene al Sprite Jugador
         self.player_sprite = None
 
-        # Our physics engine
+        # Nuestro motor de física
         self.physics_engine = None
 
-        # A Camera that can be used for scrolling the screen
+        # Una cámara que puede ser usada para recorrer la pantalla
         self.camera = None
 
-        # A Camera that can be used to draw GUI elements
+        # Una cámara que puede ser usada para dibujar elementos GUI
         self.gui_camera = None
 
         self.end_of_map = 0
 
-        # Keep track of the score
+        # Seguimiento del puntaje
         self.score = 0
 
-        # Shooting mechanics
+        # Mecánicas de disparo
         self.can_shoot = False
         self.shoot_timer = 0
 
-        # Load sounds
+        # Cargar sonidos
         self.collect_coin_sound = arcade.load_sound("sonidos/Collect_Point.mp3")
         self.jump_sound = arcade.load_sound("sonidos/Jump.wav")
         self.game_over = arcade.load_sound("sonidos/Hero_Death_00.mp3")
@@ -70,17 +70,17 @@ class GameView(arcade.View):
         self.hit_sound = arcade.load_sound("sonidos/hit.wav")
 
     def setup(self):
-        """Set up the game here. Call this function to restart the game."""
+        """Acá se realiza el setup del juego. Se llama a esta función para reiniciarlo."""
         
-        # Set up the Cameras
+        # Configuración de las cámaras
         self.camera = arcade.Camera(self.window.width, self.window.height)
         self.gui_camera = arcade.Camera(self.window.width, self.window.height)
 
-        # Map name
+        # Nombre del mapa
         map_name = ":resources:tiled_maps/map_with_ladders.json"
         self.background_map = arcade.load_texture('layers-mainmenu/forest_back_550_x_400.png')
 
-        # Layer Specific Options for the Tilemap
+        # Opciones específicas del TileMap
         layer_options = {
             LAYER_NAME_PLATFORMS: {
                 "use_spatial_hash": True,
@@ -96,21 +96,21 @@ class GameView(arcade.View):
             },
         }
 
-        # Load in TileMap
+        # Cargar en el TileMap
         self.tile_map = arcade.load_tilemap(map_name, TILE_SCALING, layer_options)
 
-        # Initiate Scene with our TileMap, this will automatically add all layers
-        # from the map as SpriteLists in the scene in the proper order.
+        # Inicializar la escene con nuestro TileMap, esto añadirá automáticamente todas las capas
+        # de nuestro mapa y la lista de Sprites en la escena en el orden correcto.
         self.scene = arcade.Scene.from_tilemap(self.tile_map)
 
-        # Keep track of the score
+        # Seguimiento del puntaje
         self.score = 0
 
-        # Shooting mechanics
+        # Mecánicas de disparo
         self.can_shoot = True
         self.shoot_timer = 0
      
-        # Set up the player, specifically placing it at these coordinates.
+        # Configurar el jugador, ubicandolo en esas coordenadas específicamente.
         self.player_sprite = PlayerCharacter()
         self.player_sprite.center_x = (
             self.tile_map.tile_width * TILE_SCALING * PLAYER_START_X
@@ -120,10 +120,10 @@ class GameView(arcade.View):
         )
         self.scene.add_sprite(LAYER_NAME_PLAYER, self.player_sprite)
 
-        # Calculate the right edge of the my_map in pixels
+        # Calcular el borde derecho del mapa en pixeles
         self.end_of_map = self.tile_map.width * GRID_PIXEL_SIZE
 
-        # -- Enemies
+        # Enemigos
         enemies_layer = self.tile_map.object_lists[LAYER_NAME_ENEMIES]
 
         for my_object in enemies_layer:
@@ -149,14 +149,14 @@ class GameView(arcade.View):
                 enemy.change_x = my_object.properties["change_x"]
             self.scene.add_sprite(LAYER_NAME_ENEMIES, enemy)
        
-        # Add bullet spritelist to Scene
+        # Agregar disparos a la escena
         self.scene.add_sprite_list(LAYER_NAME_BULLETS)
     
 
-        # --- Other stuff
+        # --- Otras cosas
        
 
-        # Create the 'physics engine'
+        # Crear el 'motor físico'
         self.physics_engine = arcade.PhysicsEnginePlatformer(
             self.player_sprite,
             platforms=self.scene[LAYER_NAME_MOVING_PLATFORMS],
@@ -168,26 +168,26 @@ class GameView(arcade.View):
         self.setup()
 
     def on_draw(self):
-        """Render the screen."""
+        """Renderizar la pantalla."""
 
-        # Clear the screen to the background color
+        # Limpiar la pantalla al color de fondo.
         self.clear()
 
-         # Set the background color
+         # Establecer color de fondo
         arcade.draw_lrwh_rectangle_textured(0, 0,
                                             SCREEN_WIDTH, SCREEN_HEIGHT,
                                             self.background_map)
 
-        # Activate our Camera
+        # Activar nuestra cámara
         self.camera.use()
 
-        # Draw our Scene
+        # Dibujar la escena
         self.scene.draw()
 
-        # Activate the GUI camera before drawing GUI elements
+        # Activar la cámara GUI camera antes de dibujar los elementos GUI
         self.gui_camera.use()
 
-        # Draw our score on the screen, scrolling it with the viewport
+        # Dibujar el puntaje en la escena, desplazándolo con la ventana gráfica
         score_text = f"Score: {self.score}"
         arcade.draw_text(
             score_text,
@@ -197,7 +197,7 @@ class GameView(arcade.View):
             18,
         )
         
-        # Draw hit boxes.
+        # Dribujar hit boxes.
         # for wall in self.wall_list:
         #     wall.draw_hit_box(arcade.color.BLACK, 3)
         #
@@ -207,7 +207,7 @@ class GameView(arcade.View):
         """
         Called when we change a key up/down, or we move on/off a ladder.
         """
-        # Process up/down
+        # Proceso arriba/abajo
         if self.up_pressed and not self.down_pressed:
             if self.physics_engine.is_on_ladder():
                 self.player_sprite.change_y = PLAYER_MOVEMENT_SPEED
@@ -222,14 +222,14 @@ class GameView(arcade.View):
             if self.physics_engine.is_on_ladder():
                 self.player_sprite.change_y = -PLAYER_MOVEMENT_SPEED
 
-        # Process up/down when on a ladder and no movement
+        # Proceso arriba/abajo en una escalera
         if self.physics_engine.is_on_ladder():
             if not self.up_pressed and not self.down_pressed:
                 self.player_sprite.change_y = 0
             elif self.up_pressed and self.down_pressed:
                 self.player_sprite.change_y = 0
 
-        # Process left/right
+        # Proceso izquierda/derecha
         if self.right_pressed and not self.left_pressed:
             self.player_sprite.change_x = PLAYER_MOVEMENT_SPEED
         elif self.left_pressed and not self.right_pressed:
@@ -238,7 +238,7 @@ class GameView(arcade.View):
             self.player_sprite.change_x = 0
 
     def on_key_press(self, key, modifiers):
-        """Called whenever a key is pressed."""
+        """Se llama siempre que se presione una tecla."""
 
         if key == arcade.key.UP or key == arcade.key.W:
             self.up_pressed = True
@@ -255,7 +255,7 @@ class GameView(arcade.View):
         self.process_keychange()
 
     def on_key_release(self, key, modifiers):
-        """Called when the user releases a key."""
+        """Llamado cuando el usuario deja de presionar una tecla."""
 
         if key == arcade.key.UP or key == arcade.key.W:
             self.up_pressed = False
@@ -289,12 +289,12 @@ class GameView(arcade.View):
         self.camera.move_to(player_centered, speed)
 
     def on_update(self, delta_time):
-        """Movement and game logic"""
+        """Movimiento y lógica del juego"""
 
-        # Move the player with the physics engine
+        # Mover el jugador con el motor físico
         self.physics_engine.update()
 
-        # Update animations
+        # Actualizar animaciones
         if self.physics_engine.can_jump():
             self.player_sprite.can_jump = False
         else:
@@ -332,7 +332,7 @@ class GameView(arcade.View):
                 self.can_shoot = True
                 self.shoot_timer = 0
 
-        # Update Animations
+        # Actualizar animaciones
         self.scene.update_animation(
             delta_time,
             [
@@ -343,12 +343,12 @@ class GameView(arcade.View):
             ],
         )
 
-        # Update moving platforms, enemies, and bullets
+        # Actualizar plataformas móviles, enemigos y disparos
         self.scene.update(
             [LAYER_NAME_MOVING_PLATFORMS, LAYER_NAME_ENEMIES, LAYER_NAME_BULLETS]
         )
 
-        # See if the enemy hit a boundary and needs to reverse direction.
+        # Si el enemigo choca contra un límite, necesita invertir su dirección.
         for enemy in self.scene[LAYER_NAME_ENEMIES]:
             if (
                 enemy.boundary_right
@@ -382,14 +382,14 @@ class GameView(arcade.View):
                         self.scene[LAYER_NAME_ENEMIES]
                         in collision.sprite_lists
                     ):
-                        # The collision was with an enemy
+                        # Si el impacto fue contra un enemigo
                         collision.health -= BULLET_DAMAGE
 
                         if collision.health <= 0:
                             collision.remove_from_sprite_lists()
                             self.score += 100
 
-                        # Hit sound
+                        # Sonido de impacto
                         arcade.play_sound(self.hit_sound)
 
                 return
@@ -408,7 +408,7 @@ class GameView(arcade.View):
             ],
         )
 
-        # Loop through each coin we hit (if any) and remove it
+        # Loop para remover monedas si fueron tocadas
         for collision in player_collision_list:
 
             if self.scene[LAYER_NAME_ENEMIES] in collision.sprite_lists:
@@ -417,29 +417,29 @@ class GameView(arcade.View):
                 self.window.show_view(game_over)
                 return
             else:
-                # Figure out how many points this coin is worth
+                # Puntaje por cada moneda
                 if "Points" not in collision.properties:
                     print("Warning, collected a coin without a Points property.")
                 else:
                     points = int(collision.properties["Points"])
                     self.score += points
 
-                # Remove the coin
+                # Remover la moneda
                 collision.remove_from_sprite_lists()
                 arcade.play_sound(self.collect_coin_sound)
 
-        # Position the camera
+        # Posición de la cámara
         self.center_camera_to_player()
 
 class GameOverView(arcade.View):
-    """Class to manage the game overview"""
+    """Clase para la vista Game Over"""
 
     def on_show_view(self):
-        """Called when switching to this view"""
+        """Se llama cuando se cambia a esta vista"""
         arcade.set_background_color(arcade.color.BLACK)
 
     def on_draw(self):
-        """Draw the game overview"""
+        """Dibujar la vista Game Over"""
         self.clear()
         arcade.draw_text(
             "Game Over - Click para reiniciar",
@@ -451,7 +451,7 @@ class GameOverView(arcade.View):
         )
 
     def on_mouse_press(self, _x, _y, _button, _modifiers):
-        """Use a mouse press to advance to the 'game' view."""
+        """Usa el click del mouse para avanzar la vista del juego."""
         game_view = GameView()
         self.window.show_view(game_view)
 
